@@ -25,9 +25,6 @@ defmodule MusicSpit.MixProject do
       {:finch, "~> 0.9"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.0"},
-      {:ecto, "~> 3.7"},
-      {:ecto_sql, "~> 3.0"},
-      {:postgrex, ">= 0.0.0"},
       {:uuid, "~> 1.1"},
       {:persistent_ets, "~> 0.1.0"}
     ]
