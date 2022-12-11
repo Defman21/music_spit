@@ -1,0 +1,2 @@
+defmodule MusicSpit do
+end
