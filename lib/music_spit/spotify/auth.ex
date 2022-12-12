@@ -3,6 +3,7 @@ defmodule MusicSpit.Spotify.Auth do
   @finch MusicSpit.Finch.Spotify
 
   def exchange_code(code) do
+    redirect_uri = Application.fetch_env!(:music_spit, MusicSpit.Spotify) |> Keyword.fetch!(:redirect_uri)
     {:ok, %Finch.Response{body: body}} =
       Finch.build(
         :post,
@@ -10,7 +11,7 @@ defmodule MusicSpit.Spotify.Auth do
         headers(),
         URI.encode_query(%{
           code: code,
-          redirect_uri: "http://localhost:8081/callback",
+          redirect_uri: redirect_uri,
           grant_type: "authorization_code"
         })
       )
@@ -20,8 +21,8 @@ defmodule MusicSpit.Spotify.Auth do
       {:ok, %{"access_token" => access_token, "refresh_token" => refresh_token, "expires_in" => expires_in}} ->
         {:ok, %{access_token: access_token, refresh_token: refresh_token, expires_in: expires_in}}
 
-      _ ->
-        {:error, "bad json"}
+      v ->
+        {:error, v}
     end
   end
 
