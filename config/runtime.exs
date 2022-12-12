@@ -9,7 +9,8 @@ config :music_spit, MusicSpit.Spotify,
   client_id: System.fetch_env!("SPOTIFY_CLIENT_ID"),
   client_secret: System.fetch_env!("SPOTIFY_CLIENT_SECRET"),
   redirect_uri: System.fetch_env!("SPOTIFY_REDIRECT_URI"),
-  scopes: System.get_env("SPOTIFY_SCOPES", "user-read-private user-read-email playlist-read-private playlist-modify-private")
+  scopes: System.get_env("SPOTIFY_SCOPES", "user-read-private user-read-email playlist-read-private playlist-modify-private"),
+  port: System.get_env("SPOTIFY_PORT", "8081") |> String.to_integer()
 
 config :music_spit, MusicSpit.Updates,
   mode: System.fetch_env!("TELEGRAM_UPDATES_MODE") |> String.to_atom(),

@@ -7,8 +7,9 @@ defmodule MusicSpit.Spotify.Supervisor do
 
   @impl Supervisor
   def init(:ok) do
+    config = Application.fetch_env!(:music_spit, MusicSpit.Spotify)
     children = [
-      {Plug.Cowboy, scheme: :http, plug: MusicSpit.Spotify.Web, options: [port: 8081]},
+      {Plug.Cowboy, scheme: :http, plug: MusicSpit.Spotify.Web, options: [port: Keyword.fetch!(config, :port)]},
       MusicSpit.Spotify.Token,
       MusicSpit.Spotify.Api
     ]
