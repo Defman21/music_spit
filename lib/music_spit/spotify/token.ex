@@ -40,7 +40,7 @@ defmodule MusicSpit.Spotify.Token do
     expires_in = lookup(state.table, :expires_in, 0)
     added_at = lookup(state.table, :added_at, DateTime.from_unix!(0))
 
-    if DateTime.compare(DateTime.now!("Etc/UTC"), DateTime.add(added_at, expires_in, :second)) == :gt do
+    if DateTime.compare(DateTime.now!("Etc/UTC"), DateTime.add(added_at, expires_in, :second)) == :gt and !is_nil(refresh_token) do
       {:ok, access_token} = Auth.refresh(refresh_token)
       Logger.debug("Refreshed access token")
       ets_persist_tokens(
