@@ -35,7 +35,12 @@ defmodule MusicSpit.Spotify.Web do
     {:ok, %{access_token: access_token, refresh_token: refresh_token, expires_in: expires_in}} =
       Auth.exchange_code(conn.query_params["code"])
 
-    Token.persist_tokens(access_token: access_token, refresh_token: refresh_token, expires_in: expires_in)
+    Token.persist_tokens(
+      access_token: access_token,
+      refresh_token: refresh_token,
+      expires_in: expires_in
+    )
+
     Api.load_tokens()
     send_resp(conn, 200, Jason.encode!(%{ok: true}))
   end

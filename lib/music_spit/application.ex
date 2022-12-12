@@ -14,7 +14,7 @@ defmodule MusicSpit.Application do
       MusicSpit.Telegram,
       MusicSpit.Odelsi,
       MusicSpit.Updates.Supervisor,
-      MusicSpit.Spotify.Supervisor,
+      MusicSpit.Spotify.Supervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

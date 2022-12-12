@@ -3,7 +3,9 @@ defmodule MusicSpit.Spotify.Auth do
   @finch MusicSpit.Finch.Spotify
 
   def exchange_code(code) do
-    redirect_uri = Application.fetch_env!(:music_spit, MusicSpit.Spotify) |> Keyword.fetch!(:redirect_uri)
+    redirect_uri =
+      Application.fetch_env!(:music_spit, MusicSpit.Spotify) |> Keyword.fetch!(:redirect_uri)
+
     {:ok, %Finch.Response{body: body}} =
       Finch.build(
         :post,
@@ -18,7 +20,12 @@ defmodule MusicSpit.Spotify.Auth do
       |> Finch.request(@finch)
 
     case Jason.decode(body) do
-      {:ok, %{"access_token" => access_token, "refresh_token" => refresh_token, "expires_in" => expires_in}} ->
+      {:ok,
+       %{
+         "access_token" => access_token,
+         "refresh_token" => refresh_token,
+         "expires_in" => expires_in
+       }} ->
         {:ok, %{access_token: access_token, refresh_token: refresh_token, expires_in: expires_in}}
 
       v ->
@@ -53,6 +60,9 @@ defmodule MusicSpit.Spotify.Auth do
 
   defp get_authorization_header() do
     config = Application.fetch_env!(:music_spit, MusicSpit.Spotify)
-    Base.encode64("#{Keyword.fetch!(config, :client_id)}:#{Keyword.fetch!(config, :client_secret)}")
+
+    Base.encode64(
+      "#{Keyword.fetch!(config, :client_id)}:#{Keyword.fetch!(config, :client_secret)}"
+    )
   end
 end
