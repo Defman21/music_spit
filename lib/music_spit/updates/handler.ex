@@ -54,13 +54,15 @@ defmodule MusicSpit.Updates.Handler do
         :ok
 
       entity ->
-        String.slice(text, entity["offset"], entity["length"])
-        |> URI.parse()
-        |> handle_url()
-        |> send_message(chat["id"])
-
-        if Admin.can_delete_messages?(chat_id) do
+        with :ok <-
+               String.slice(text, entity["offset"], entity["length"])
+               |> URI.parse()
+               |> handle_url()
+               |> send_message(chat["id"]),
+             true <- Admin.can_delete_messages?(chat_id) do
           Telegram.delete_message(chat_id, message_id)
+        else
+          :skip -> Logger.debug("Skipped update")
         end
 
         :ok
@@ -175,6 +177,8 @@ defmodule MusicSpit.Updates.Handler do
       |> Enum.join("\n")
 
     Telegram.send_message(chat_id, message, parse_mode: "MarkdownV2", reply_markup: markup)
+
+    :ok
   end
 
   defp send_message(%{ids: %{}, links: %{}, human_name: human_name}, chat_id) do
@@ -183,9 +187,11 @@ defmodule MusicSpit.Updates.Handler do
       "Песня `#{Telegram.escape(human_name)}` не найдена в Spotify 😢",
       parse_mode: "MarkdownV2"
     )
+
+    :ok
   end
 
-  defp send_message(nil, _), do: :ok
+  defp send_message(nil, _), do: :skip
 
   defp build_human_url({platform, song}), do: "[#{@human_names[platform]}](#{song["url"]})"
 end
