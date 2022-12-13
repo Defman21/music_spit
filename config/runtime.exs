@@ -24,4 +24,5 @@ config :music_spit, MusicSpit.Updates,
   polling_period:
     System.get_env("TELEGRAM_UPDATES_POLLING_PERIOD", "3000") |> String.to_integer(),
   # todo: not implemented yet
-  webhook_url: System.get_env("TELEGRAM_UPDATES_WEBHOOK_URL", nil)
+  webhook_url: System.get_env("TELEGRAM_UPDATES_WEBHOOK_URL", nil),
+  webhook_port: System.get_env("TELEGRAM_WEBHOOK_PORT", "8080") |> String.to_integer()

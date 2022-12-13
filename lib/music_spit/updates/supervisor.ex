@@ -19,7 +19,7 @@ defmodule MusicSpit.Updates.Supervisor do
           {Plug.Cowboy,
            scheme: :http,
            plug: MusicSpit.Updates.Webhook,
-           options: [port: Keyword.fetch!(config, :port)]}
+           options: [port: Keyword.fetch!(config, :webhook_port)]}
       end
 
     children = [
