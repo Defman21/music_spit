@@ -1,4 +1,9 @@
 defmodule MusicSpit.Spotify.Web do
+  @moduledoc """
+  Spotify Callback Web server.
+
+  Handles OAuth2 authorization flow (redirect to Spotify, auth, exchange code for tokens).
+  """
   require Logger
   use Plug.Router
 

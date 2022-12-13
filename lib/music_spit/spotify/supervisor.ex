@@ -1,4 +1,6 @@
 defmodule MusicSpit.Spotify.Supervisor do
+  @moduledoc false
+
   use Supervisor
 
   def start_link(opts) do

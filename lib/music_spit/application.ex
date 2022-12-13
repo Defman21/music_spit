@@ -9,10 +9,10 @@ defmodule MusicSpit.Application do
   def start(_type, _args) do
     children = [
       {Finch, name: MusicSpit.Finch.Telegram},
-      {Finch, name: MusicSpit.Finch.Odelsi},
+      {Finch, name: MusicSpit.Finch.Odesli},
       {Finch, name: MusicSpit.Finch.Spotify},
       MusicSpit.Telegram,
-      MusicSpit.Odelsi,
+      MusicSpit.Odesli,
       MusicSpit.Updates.Supervisor,
       MusicSpit.Spotify.Supervisor
     ]

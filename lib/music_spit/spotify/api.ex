@@ -1,4 +1,7 @@
 defmodule MusicSpit.Spotify.Api do
+  @moduledoc """
+  Spotify API wrapper
+  """
   use GenServer
   @base_url URI.parse("https://api.spotify.com/v1/playlists")
   @finch MusicSpit.Finch.Spotify

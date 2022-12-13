@@ -1,4 +1,9 @@
 defmodule MusicSpit.Spotify.Token do
+  @moduledoc """
+  Spotify API Token module.
+
+  Repsponsible for auto-refreshing the access token and store it in an ETS table.
+  """
   require Logger
   use GenServer
   alias MusicSpit.Spotify.Auth

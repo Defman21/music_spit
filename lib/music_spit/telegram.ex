@@ -1,4 +1,7 @@
 defmodule MusicSpit.Telegram do
+  @moduledoc """
+  Telegram API wrapper.
+  """
   require Logger
   use GenServer
 

@@ -1,4 +1,7 @@
 defmodule MusicSpit.Spotify.Auth do
+  @moduledoc """
+  Spotify OAuth2 API wrapper
+  """
   @api_url "https://accounts.spotify.com/api/token"
   @finch MusicSpit.Finch.Spotify
 

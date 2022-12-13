@@ -1,4 +1,9 @@
 defmodule MusicSpit.Updates.Admin do
+  @moduledoc """
+  Telegram helper for permission management.
+
+  Keeps track of whenever the bot can delete messages in a chat.
+  """
   use GenServer
   alias MusicSpit.Telegram
 

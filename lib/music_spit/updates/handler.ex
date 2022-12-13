@@ -1,7 +1,10 @@
 defmodule MusicSpit.Updates.Handler do
+  @moduledoc """
+  Telegram updates handler.
+  """
   require Logger
   alias MusicSpit.Updates.Admin
-  alias MusicSpit.Odelsi
+  alias MusicSpit.Odesli
   alias MusicSpit.Telegram
   alias MusicSpit.Spotify.Api
 
@@ -138,19 +141,19 @@ defmodule MusicSpit.Updates.Handler do
   end
 
   defp handle_url(%{host: "open.spotify.com", path: "/track/" <> _} = url) do
-    Odelsi.get_song(url, platforms: @platforms)
+    Odesli.get_song(url, platforms: @platforms)
   end
 
   defp handle_url(%{host: "geo.music.apple.com"} = url) do
-    Odelsi.get_song(url, platforms: @platforms)
+    Odesli.get_song(url, platforms: @platforms)
   end
 
   defp handle_url(%{host: "music.apple.com"} = url) do
-    Odelsi.get_song(url, platforms: @platforms)
+    Odesli.get_song(url, platforms: @platforms)
   end
 
   defp handle_url(%{host: "itunes.apple.com"} = url) do
-    Odelsi.get_song(url, platforms: @platforms)
+    Odesli.get_song(url, platforms: @platforms)
   end
 
   defp handle_url(_), do: nil
@@ -172,7 +175,7 @@ defmodule MusicSpit.Updates.Handler do
       [
         Telegram.escape(human_name),
         "",
-        Enum.map(song_links, &build_human_url/1) |> Enum.join(" \\| ")
+        Enum.map_join(song_links, " \\| ", &build_human_url/1)
       ]
       |> Enum.join("\n")
 

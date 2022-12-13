@@ -1,4 +1,9 @@
-defmodule MusicSpit.Odelsi do
+defmodule MusicSpit.Odesli do
+  @moduledoc """
+  Odesli API wrapper.
+
+  Odesli is used to retrieve platform links for a song on another platform.
+  """
   use GenServer
 
   @base_url URI.parse("https://api.song.link/v1-alpha.1/links")

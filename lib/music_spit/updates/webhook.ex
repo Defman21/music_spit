@@ -1,4 +1,7 @@
 defmodule MusicSpit.Updates.Webhook do
+  @moduledoc """
+  Telegram web-hook server.
+  """
   require Logger
   use Plug.Router
 

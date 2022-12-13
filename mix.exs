@@ -26,7 +26,8 @@ defmodule MusicSpit.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.0"},
       {:uuid, "~> 1.1"},
-      {:persistent_ets, "~> 0.1.0"}
+      {:persistent_ets, "~> 0.1.0"},
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false}
     ]
   end
 end

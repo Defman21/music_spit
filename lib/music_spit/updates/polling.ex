@@ -1,4 +1,7 @@
 defmodule MusicSpit.Updates.Polling do
+  @moduledoc """
+  Telegram long-polling module.
+  """
   require Logger
   use GenServer
   alias MusicSpit.Telegram
