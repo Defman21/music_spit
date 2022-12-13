@@ -40,28 +40,24 @@ defmodule MusicSpit.Updates.Handler do
       |> Keyword.fetch!(:allowed_chats)
       |> Map.has_key?(chat_id)
 
-  defp handle_allowed(%{
-         "message" => %{
-           "message_id" => message_id,
-           "chat" => %{"id" => chat_id} = chat,
-           "from" => from,
-           "text" => text,
-           "entities" => entities
-         }
-       })
+  defp handle_allowed(%{"message" => %{"entities" => entities} = message})
        when length(entities) > 0 do
-    Logger.debug("#{from["username"]}: #{text}")
-
-    Enum.filter(entities, &(&1["type"] == "url")) |> List.first() |> handle_entity()
+    Enum.filter(entities, &(&1["type"] == "url")) |> List.first() |> handle_entity(message)
   end
 
-  defp handle_entity(nil), do: :ok
+  defp handle_entity(nil, _), do: :ok
 
-  defp handle_entity(entity) do
+  defp handle_entity(entity, %{
+         "message" => %{
+           "message_id" => message_id,
+           "chat" => %{"id" => chat_id},
+           "text" => text
+         }
+       }) do
     case String.slice(text, entity["offset"], entity["length"])
          |> URI.parse()
          |> validate_url()
-         |> send_message(chat["id"]) do
+         |> send_message(chat_id) do
       :ok ->
         if Admin.can_delete_messages?(chat_id),
           do: Telegram.delete_message(chat_id, message_id)
