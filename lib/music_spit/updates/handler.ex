@@ -40,7 +40,7 @@ defmodule MusicSpit.Updates.Handler do
       |> Keyword.fetch!(:allowed_chats)
       |> Map.has_key?(chat_id)
 
-  defp handle_allowed(%{"message" => %{"entities" => entities} = message})
+  defp handle_allowed(%{"message" => %{"entities" => entities}} = message)
        when length(entities) > 0 do
     Enum.filter(entities, &(&1["type"] == "url")) |> List.first() |> handle_entity(message)
   end
