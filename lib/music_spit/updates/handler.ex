@@ -52,24 +52,25 @@ defmodule MusicSpit.Updates.Handler do
        when length(entities) > 0 do
     Logger.debug("#{from["username"]}: #{text}")
 
-    case Enum.filter(entities, &(&1["type"] == "url")) |> List.first() do
-      nil ->
-        :ok
+    Enum.filter(entities, &(&1["type"] == "url")) |> List.first() |> handle_entity()
+  end
 
-      entity ->
-        with :ok <-
-               String.slice(text, entity["offset"], entity["length"])
-               |> URI.parse()
-               |> handle_url()
-               |> send_message(chat["id"]),
-             true <- Admin.can_delete_messages?(chat_id) do
-          Telegram.delete_message(chat_id, message_id)
-        else
-          :skip -> Logger.debug("Skipped update")
-        end
+  defp handle_entity(nil), do: :ok
 
-        :ok
+  defp handle_entity(entity) do
+    case String.slice(text, entity["offset"], entity["length"])
+         |> URI.parse()
+         |> validate_url()
+         |> send_message(chat["id"]) do
+      :ok ->
+        if Admin.can_delete_messages?(chat_id),
+          do: Telegram.delete_message(chat_id, message_id)
+
+      :skip ->
+        Logger.debug("Skipped update")
     end
+
+    :ok
   end
 
   defp handle_allowed(%{
@@ -140,28 +141,33 @@ defmodule MusicSpit.Updates.Handler do
     )
   end
 
-  defp handle_url(%{host: "open.spotify.com", path: "/track/" <> _} = url) do
-    Odesli.get_song(url, platforms: @platforms)
+  defp validate_url(%{host: "open.spotify.com", path: "/track/" <> _} = url), do: url
+  defp validate_url(%{host: "geo.music.apple.com"} = url), do: url
+  defp validate_url(%{host: "music.apple.com"} = url), do: url
+  defp validate_url(%{host: "itunes.apple.com"} = url), do: url
+  defp validate_url(_), do: :invalid_url
+
+  defp send_message(:invalid_url, _), do: :skip
+
+  defp send_message(url, chat_id) do
+    %{"message_id" => message_id} = Telegram.send_message_blocked(chat_id, "Ищем песенку")
+
+    case Odesli.get_song(url, platforms: @platforms) |> get_song_message_text() do
+      {:ok, text, markup} ->
+        Telegram.edit_message(message_id, chat_id,
+          text: text,
+          reply_markup: markup,
+          parse_mode: "MarkdownV2"
+        )
+
+      {:not_found, text, nil} ->
+        Telegram.edit_message(message_id, chat_id, text: text, parse_mode: "MarkdownV2")
+    end
+
+    :ok
   end
 
-  defp handle_url(%{host: "geo.music.apple.com"} = url) do
-    Odesli.get_song(url, platforms: @platforms)
-  end
-
-  defp handle_url(%{host: "music.apple.com"} = url) do
-    Odesli.get_song(url, platforms: @platforms)
-  end
-
-  defp handle_url(%{host: "itunes.apple.com"} = url) do
-    Odesli.get_song(url, platforms: @platforms)
-  end
-
-  defp handle_url(_), do: nil
-
-  defp send_message(
-         %{ids: %{"spotify" => id}, links: song_links, human_name: human_name},
-         chat_id
-       ) do
+  defp get_song_message_text(%{ids: %{"spotify" => id}, links: song_links, human_name: human_name}) do
     markup = %{
       inline_keyboard: [
         [
@@ -179,22 +185,12 @@ defmodule MusicSpit.Updates.Handler do
       ]
       |> Enum.join("\n")
 
-    Telegram.send_message(chat_id, message, parse_mode: "MarkdownV2", reply_markup: markup)
-
-    :ok
+    {:ok, message, markup}
   end
 
-  defp send_message(%{ids: %{}, links: %{}, human_name: human_name}, chat_id) do
-    Telegram.send_message(
-      chat_id,
-      "Песня `#{Telegram.escape(human_name)}` не найдена в Spotify 😢",
-      parse_mode: "MarkdownV2"
-    )
-
-    :ok
+  defp get_song_message_text(%{ids: %{}, links: %{}, human_name: human_name}) do
+    {:not_found, "Песня `#{Telegram.escape(human_name)}` не найдена в Spotify 😢", nil}
   end
-
-  defp send_message(nil, _), do: :skip
 
   defp build_human_url({platform, song}), do: "[#{@human_names[platform]}](#{song["url"]})"
 end

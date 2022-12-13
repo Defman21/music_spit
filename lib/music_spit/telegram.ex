@@ -29,6 +29,14 @@ defmodule MusicSpit.Telegram do
     GenServer.cast(__MODULE__, {:send_message, chat_id, text, opts})
   end
 
+  def send_message_blocked(chat_id, text, opts \\ []) do
+    GenServer.call(__MODULE__, {:send_message, chat_id, text, opts})
+  end
+
+  def edit_message(message_id, chat_id, opts \\ []) do
+    GenServer.cast(__MODULE__, {:edit_message, message_id, chat_id, opts})
+  end
+
   def edit_message_reply_markup(message_id, chat_id, opts \\ []) do
     GenServer.cast(__MODULE__, {:edit_message_reply_markup, message_id, chat_id, opts})
   end
@@ -88,6 +96,13 @@ defmodule MusicSpit.Telegram do
   end
 
   @impl GenServer
+  def handle_call({:send_message, chat_id, text, opts}, _from, state) do
+    {:ok, message} = req("sendMessage", merge(opts, chat_id: chat_id, text: text))
+
+    {:reply, message, state}
+  end
+
+  @impl GenServer
   def handle_cast({:send_message, chat_id, text, opts}, state) do
     {:ok, _} = req("sendMessage", merge(opts, chat_id: chat_id, text: text))
 
@@ -115,6 +130,14 @@ defmodule MusicSpit.Telegram do
     {:noreply, state}
   end
 
+  @impl GenServer
+  def handle_cast({:edit_message, message_id, chat_id, opts}, state) do
+    {:ok, _} = req("editMessageText", merge(opts, message_id: message_id, chat_id: chat_id))
+
+    {:noreply, state}
+  end
+
+  @impl GenServer
   def handle_cast({:edit_message_reply_markup, message_id, chat_id, opts}, state) do
     case req("editMessageReplyMarkup", merge(opts, message_id: message_id, chat_id: chat_id)) do
       {:ok, _} -> nil

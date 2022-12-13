@@ -35,7 +35,7 @@ defmodule MusicSpit.Updates.Admin do
         can_delete_messages =
           Telegram.get_chat_administrators(chat_id)
           |> Enum.filter(&(&1["user"]["username"] == "music_spit_bot"))
-          |> List.first()
+          |> List.first(%{"can_delete_messages" => false})
           |> Map.get("can_delete_messages")
 
         {:reply, can_delete_messages, Map.put(state, chat_id, can_delete_messages)}
