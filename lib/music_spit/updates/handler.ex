@@ -45,30 +45,6 @@ defmodule MusicSpit.Updates.Handler do
     Enum.filter(entities, &(&1["type"] == "url")) |> List.first() |> handle_entity(message)
   end
 
-  defp handle_entity(nil, _), do: :ok
-
-  defp handle_entity(entity, %{
-         "message" => %{
-           "message_id" => message_id,
-           "chat" => %{"id" => chat_id},
-           "text" => text
-         }
-       }) do
-    case String.slice(text, entity["offset"], entity["length"])
-         |> URI.parse()
-         |> validate_url()
-         |> send_message(chat_id) do
-      :ok ->
-        if Admin.can_delete_messages?(chat_id),
-          do: Telegram.delete_message(chat_id, message_id)
-
-      :skip ->
-        Logger.debug("Skipped update")
-    end
-
-    :ok
-  end
-
   defp handle_allowed(%{
          "callback_query" => %{
            "id" => id,
@@ -95,6 +71,30 @@ defmodule MusicSpit.Updates.Handler do
 
   defp handle_disallowed(update) do
     Logger.debug(update)
+    :ok
+  end
+
+  defp handle_entity(nil, _), do: :ok
+
+  defp handle_entity(entity, %{
+         "message" => %{
+           "message_id" => message_id,
+           "chat" => %{"id" => chat_id},
+           "text" => text
+         }
+       }) do
+    case String.slice(text, entity["offset"], entity["length"])
+         |> URI.parse()
+         |> validate_url()
+         |> send_message(chat_id) do
+      :ok ->
+        if Admin.can_delete_messages?(chat_id),
+          do: Telegram.delete_message(chat_id, message_id)
+
+      :skip ->
+        Logger.debug("Skipped update")
+    end
+
     :ok
   end
 
