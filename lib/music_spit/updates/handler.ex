@@ -141,6 +141,8 @@ defmodule MusicSpit.Updates.Handler do
   defp validate_url(%{host: "geo.music.apple.com"} = url), do: url
   defp validate_url(%{host: "music.apple.com"} = url), do: url
   defp validate_url(%{host: "itunes.apple.com"} = url), do: url
+  defp validate_url(%{host: "music.yandex.com"} = url), do: url
+  defp validate_url(%{host: "music.yandex.ru"} = url), do: url
   defp validate_url(_), do: :invalid_url
 
   defp send_message(:invalid_url, _), do: :skip
