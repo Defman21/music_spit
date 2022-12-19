@@ -103,10 +103,16 @@ defmodule MusicSpit.Updates.Handler do
   end
 
   defp handle_callback(id, "approve:" <> spotify_id, message) do
-    Api.add_track_to_playlist(
-      spotify_id,
-      Application.fetch_env!(:music_spit, MusicSpit.Spotify) |> Keyword.fetch!(:playlist_id)
-    )
+    response =
+      Api.add_track_to_playlist(
+        spotify_id,
+        Application.fetch_env!(:music_spit, MusicSpit.Spotify) |> Keyword.fetch!(:playlist_id)
+      )
+
+    case response do
+      {:error, json} -> Logger.error(json)
+      :ok -> nil
+    end
 
     Telegram.answer_callback_query(id)
 

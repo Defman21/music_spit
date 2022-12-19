@@ -17,7 +17,7 @@ defmodule MusicSpit.Spotify.Api do
   end
 
   def add_track_to_playlist(track_id, playlist_id) do
-    GenServer.cast(__MODULE__, {:add_track_to_playlist, track_id, playlist_id})
+    GenServer.call(__MODULE__, {:add_track_to_playlist, track_id, playlist_id})
   end
 
   def load_tokens() do
@@ -35,7 +35,7 @@ defmodule MusicSpit.Spotify.Api do
   end
 
   @impl GenServer
-  def handle_cast({:add_track_to_playlist, track_id, playlist_id}, state) do
+  def handle_call({:add_track_to_playlist, track_id, playlist_id}, _from, state) do
     {:ok, %Finch.Response{body: body}} =
       Finch.build(
         :post,
@@ -52,7 +52,10 @@ defmodule MusicSpit.Spotify.Api do
       )
       |> Finch.request(@finch)
 
-    {:noreply, Token.retrieve_tokens()}
+    case Jason.decode!(body) do
+      %{"snapshot_id" => _} -> {:reply, :ok, Token.retrieve_tokens()}
+      json -> {:reply, {:error, json}, Token.retrieve_tokens()}
+    end
   end
 
   @impl GenServer
