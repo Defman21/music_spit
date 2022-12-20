@@ -143,20 +143,21 @@ defmodule MusicSpit.Updates.Handler do
     )
   end
 
-  defp validate_url(%{host: "open.spotify.com", path: "/track/" <> _} = url), do: url
-  defp validate_url(%{host: "geo.music.apple.com"} = url), do: url
-  defp validate_url(%{host: "music.apple.com"} = url), do: url
-  defp validate_url(%{host: "itunes.apple.com"} = url), do: url
-  defp validate_url(%{host: "music.yandex.com"} = url), do: url
-  defp validate_url(%{host: "music.yandex.ru"} = url), do: url
-  defp validate_url(_), do: :invalid_url
+  defp validate_url(%{host: "open.spotify.com", path: "/track/" <> _} = url), do: {:track, url}
+  defp validate_url(%{host: "open.spotify.com", path: "/album/" <> _} = url), do: {:album, url}
+  defp validate_url(%{host: "geo.music.apple.com"} = url), do: {:track, url}
+  defp validate_url(%{host: "music.apple.com"} = url), do: {:track, url}
+  defp validate_url(%{host: "itunes.apple.com"} = url), do: {:track, url}
+  defp validate_url(%{host: "music.yandex.com"} = url), do: {:track, url}
+  defp validate_url(%{host: "music.yandex.ru"} = url), do: {:track, url}
+  defp validate_url(_), do: {:invalid_url, nil}
 
-  defp send_message(:invalid_url, _), do: :skip
+  defp send_message({:invalid_url, nil}, _), do: :skip
 
-  defp send_message(url, chat_id) do
+  defp send_message({url_type, url}, chat_id) do
     %{"message_id" => message_id} = Telegram.send_message_blocked(chat_id, "Ищем песенку")
 
-    case Odesli.get_song(url, platforms: @platforms) |> get_song_message_text() do
+    case Odesli.get_song(url, platforms: @platforms) |> get_song_message_text(url_type) do
       {:ok, text, markup} ->
         Telegram.edit_message(message_id, chat_id,
           text: text,
@@ -171,15 +172,25 @@ defmodule MusicSpit.Updates.Handler do
     :ok
   end
 
-  defp get_song_message_text(%{ids: %{"spotify" => id}, links: song_links, human_name: human_name}) do
-    markup = %{
-      inline_keyboard: [
-        [
-          %{callback_data: "approve:#{id}", text: "✅"},
-          %{callback_data: "reject:#{id}", text: "❌"}
-        ]
-      ]
-    }
+  defp get_song_message_text(
+         %{ids: %{"spotify" => id}, links: song_links, human_name: human_name},
+         url_type
+       ) do
+    markup =
+      case url_type do
+        :track ->
+          %{
+            inline_keyboard: [
+              [
+                %{callback_data: "approve:#{id}", text: "✅"},
+                %{callback_data: "reject:#{id}", text: "❌"}
+              ]
+            ]
+          }
+
+        :album ->
+          %{}
+      end
 
     message =
       [
@@ -192,7 +203,7 @@ defmodule MusicSpit.Updates.Handler do
     {:ok, message, markup}
   end
 
-  defp get_song_message_text(%{ids: %{}, links: %{}, human_name: human_name}) do
+  defp get_song_message_text(%{ids: %{}, links: %{}, human_name: human_name}, _url_type) do
     {:not_found, "Песня `#{Telegram.escape(human_name)}` не найдена в Spotify 😢", nil}
   end
 
