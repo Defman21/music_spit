@@ -56,9 +56,11 @@ defmodule MusicSpit.Spotify.Token do
         refresh_token: refresh_token,
         expires_in: expires_in
       )
-    end
 
-    {:reply, %{access_token: access_token, refresh_token: refresh_token}, state}
+      {:reply, %{access_token: access_token, refresh_token: refresh_token}, state}
+    else
+      {:reply, %{access_token: access_token, refresh_token: refresh_token}, state}
+    end
   end
 
   # Internal
