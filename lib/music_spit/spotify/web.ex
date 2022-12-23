@@ -46,7 +46,6 @@ defmodule MusicSpit.Spotify.Web do
       expires_in: expires_in
     )
 
-    Api.load_tokens()
     send_resp(conn, 200, Jason.encode!(%{ok: true}))
   end
 end

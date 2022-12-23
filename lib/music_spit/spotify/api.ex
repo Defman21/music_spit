@@ -20,28 +20,21 @@ defmodule MusicSpit.Spotify.Api do
     GenServer.call(__MODULE__, {:add_track_to_playlist, track_id, playlist_id})
   end
 
-  def load_tokens() do
-    GenServer.cast(__MODULE__, :load_tokens)
-  end
-
   @impl GenServer
   def init(:ok) do
-    {:ok, Token.retrieve_tokens()}
+    {:ok, nil}
   end
 
   @impl GenServer
-  def handle_cast(:load_tokens, _) do
-    {:noreply, Token.retrieve_tokens()}
-  end
+  def handle_call({:add_track_to_playlist, track_id, playlist_id}, _from, _state) do
+    %{access_token: access_token} = Token.retrieve_tokens()
 
-  @impl GenServer
-  def handle_call({:add_track_to_playlist, track_id, playlist_id}, _from, state) do
     {:ok, %Finch.Response{body: body}} =
       Finch.build(
         :post,
         method_url("playlists/#{playlist_id}/tracks"),
         [
-          {"authorization", "Bearer #{state.access_token}"},
+          {"authorization", "Bearer #{access_token}"},
           {"content-type", "application/json"}
         ],
         Jason.encode!(%{
@@ -53,25 +46,27 @@ defmodule MusicSpit.Spotify.Api do
       |> Finch.request(@finch)
 
     case Jason.decode!(body) do
-      %{"snapshot_id" => _} -> {:reply, :ok, Token.retrieve_tokens()}
-      json -> {:reply, {:error, json}, Token.retrieve_tokens()}
+      %{"snapshot_id" => _} -> {:reply, :ok, nil}
+      json -> {:reply, {:error, json}, nil}
     end
   end
 
   @impl GenServer
-  def handle_call({:get_playlist, playlist_id}, _from, state) do
+  def handle_call({:get_playlist, playlist_id}, _from, _state) do
+    %{access_token: access_token} = Token.retrieve_tokens()
+
     {:ok, %Finch.Response{body: body}} =
       Finch.build(
         :get,
         method_url("playlists/#{playlist_id}"),
         [
-          {"authorization", "Bearer #{state.access_token}"}
+          {"authorization", "Bearer #{access_token}"}
         ],
         nil
       )
       |> Finch.request(@finch)
 
-    {:reply, Jason.decode!(body), Token.retrieve_tokens()}
+    {:reply, Jason.decode!(body), nil}
   end
 
   defp method_url(method) do
