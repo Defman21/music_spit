@@ -7,7 +7,7 @@ defmodule MusicSpit.Spotify.Web do
   require Logger
   use Plug.Router
 
-  alias MusicSpit.Spotify.{Auth, Api, Token}
+  alias MusicSpit.Spotify.{Auth, Token}
 
   @base_url URI.parse("https://accounts.spotify.com/authorize")
 
